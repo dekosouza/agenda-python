@@ -31,6 +31,21 @@ def ver_contatos(contatos):
 def contar_contatos(contatos):
     print(f"Você tem {len(contatos)} contato(s).")
 
+def buscar_contato(contatos):
+    nome = input("Digite o nome para buscar: ")
+    encontrados = []
+
+    for contato in contatos:
+        if nome.lower() in contato.lower():
+            encontrados.append(contato)
+
+    if len(encontrados) == 0:
+        print("Nenhum contato encontrado.")
+    else:
+        print("\nContatos encontrados:")
+        for i, contato in enumerate(encontrados, 1):
+            print(f"{i}. {contato}")
+
 contatos = carregar_contatos()
 
 while True:
@@ -39,6 +54,7 @@ while True:
     print("2 - Ver contatos")
     print("3 - Sair")
     print("4 - Quantos contatos")
+    print("5 - Buscar contato")
 
     opcao = input("Escolha uma opção: ")
 
@@ -51,5 +67,7 @@ while True:
         break
     elif opcao == "4":
         contar_contatos(contatos)
+    elif opcao == "5":
+        buscar_contato(contatos)
     else:
         print("Opção inválida.")
