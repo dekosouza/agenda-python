@@ -1,3 +1,5 @@
 dek - 123
 LOKO - 55
 MARIA - 777
+deko - 1
+maria - 2
