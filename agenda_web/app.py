@@ -89,4 +89,5 @@ def comando():
     return jsonify({"mensagem": mensagem, "contatos": contatos})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
