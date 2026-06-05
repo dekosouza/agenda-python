@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot IA — Atendimento automático para seu negócio</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; color: #1a1a2e; }
+
+        /* HERO */
+        .hero { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 80px 20px; text-align: center; }
+        .hero h1 { font-size: 36px; margin-bottom: 16px; line-height: 1.3; }
+        .hero h1 span { color: #4f46e5; }
+        .hero p { font-size: 18px; opacity: 0.85; max-width: 560px; margin: 0 auto 32px; line-height: 1.6; }
+        .btn-hero { display: inline-block; background: #4f46e5; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold; }
+        .btn-hero:hover { background: #4338ca; }
+        .demo-link { display: block; margin-top: 16px; color: #a5b4fc; font-size: 14px; text-decoration: none; }
+        .demo-link:hover { text-decoration: underline; }
+
+        /* PROBLEMAS */
+        .section { padding: 60px 20px; }
+        .section.gray { background: #f8f9fa; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section-title { font-size: 26px; text-align: center; margin-bottom: 40px; }
+        .section-title span { color: #4f46e5; }
+
+        .problemas { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .problema { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); text-align: center; }
+        .problema .emoji { font-size: 32px; margin-bottom: 12px; }
+        .problema h3 { font-size: 15px; margin-bottom: 8px; }
+        .problema p { font-size: 13px; color: #666; line-height: 1.5; }
+
+        /* SOLUCAO */
+        .solucao { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .solucao-item { text-align: center; padding: 20px; }
+        .solucao-item .emoji { font-size: 40px; margin-bottom: 12px; }
+        .solucao-item h3 { font-size: 16px; margin-bottom: 8px; color: #4f46e5; }
+        .solucao-item p { font-size: 14px; color: #555; line-height: 1.5; }
+
+        /* PLANOS */
+        .planos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .plano { border: 2px solid #e5e7eb; border-radius: 16px; padding: 28px; text-align: center; }
+        .plano.destaque { border-color: #4f46e5; position: relative; }
+        .plano.destaque::before { content: "Mais popular"; background: #4f46e5; color: white; font-size: 12px; padding: 4px 12px; border-radius: 20px; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+        .plano h3 { font-size: 18px; margin-bottom: 8px; }
+        .plano .preco { font-size: 32px; font-weight: bold; color: #4f46e5; margin: 12px 0; }
+        .plano .preco span { font-size: 14px; color: #666; font-weight: normal; }
+        .plano ul { list-style: none; text-align: left; margin: 16px 0 24px; }
+        .plano ul li { font-size: 14px; color: #555; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+        .plano ul li::before { content: "✓ "; color: #4f46e5; font-weight: bold; }
+        .btn-plano { display: block; background: #4f46e5; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-size: 15px; }
+        .btn-plano:hover { background: #4338ca; }
+        .btn-plano.outline { background: white; color: #4f46e5; border: 2px solid #4f46e5; }
+        .btn-plano.outline:hover { background: #f0f0ff; }
+
+        /* DEMO */
+        .demo-section { background: #1a1a2e; color: white; padding: 60px 20px; text-align: center; }
+        .demo-section h2 { font-size: 26px; margin-bottom: 16px; }
+        .demo-section p { opacity: 0.8; margin-bottom: 32px; font-size: 16px; }
+        .demo-links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .demo-btn { background: white; color: #1a1a2e; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: bold; }
+        .demo-btn.rosa { background: #d63384; color: white; }
+        .demo-btn.laranja { background: #e65c00; color: white; }
+
+        /* CONTATO */
+        .contato { padding: 60px 20px; text-align: center; }
+        .contato h2 { font-size: 26px; margin-bottom: 12px; }
+        .contato p { color: #666; margin-bottom: 32px; font-size: 16px; }
+        .btn-whatsapp { display: inline-block; background: #25D366; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-size: 16px; font-weight: bold; }
+        .btn-whatsapp:hover { background: #20ba57; }
+
+        footer { background: #1a1a2e; color: #666; text-align: center; padding: 20px; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <!-- HERO -->
+    <div class="hero">
+        <h1>Seu negócio atendendo<br><span>24 horas por dia</span> com IA</h1>
+        <p>Chatbot inteligente que responde seus clientes automaticamente — horário, preços, agendamento — enquanto você foca no que importa.</p>
+        <a href="https://wa.me/55SEUNUMERO" class="btn-hero">Quero meu chatbot →</a>
+        <a href="#demo" class="demo-link">Ver demonstração ↓</a>
+    </div>
+
+    <!-- PROBLEMAS -->
+    <div class="section gray">
+        <div class="container">
+            <h2 class="section-title">Você se identifica com <span>algum desses problemas?</span></h2>
+            <div class="problemas">
+                <div class="problema">
+                    <div class="emoji">😩</div>
+                    <h3>Mesmo WhatsApp, todo dia</h3>
+                    <p>Responde as mesmas perguntas de horário e preço dezenas de vezes por dia</p>
+                </div>
+                <div class="problema">
+                    <div class="emoji">🌙</div>
+                    <h3>Clientes fora do horário</h3>
+                    <p>Perde clientes que mandam mensagem à noite ou no domingo e não recebem resposta</p>
+                </div>
+                <div class="problema">
+                    <div class="emoji">📱</div>
+                    <h3>Preso no celular</h3>
+                    <p>Não consegue focar no trabalho porque precisa ficar respondendo mensagens</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOLUCAO -->
+    <div class="section">
+        <div class="container">
+            <h2 class="section-title">Como o <span>ChatBot IA</span> resolve isso</h2>
+            <div class="solucao">
+                <div class="solucao-item">
+                    <div class="emoji">🤖</div>
+                    <h3>Responde automaticamente</h3>
+                    <p>IA treinada com as informações do seu negócio responde qualquer pergunta do cliente</p>
+                </div>
+                <div class="solucao-item">
+                    <div class="emoji">🎨</div>
+                    <h3>Com a sua cara</h3>
+                    <p>Cores, nome e personalidade do seu negócio. Parece que você mesmo está respondendo</p>
+                </div>
+                <div class="solucao-item">
+                    <div class="emoji">⚡</div>
+                    <h3>Pronto em 24h</h3>
+                    <p>Você me passa as informações do negócio hoje, amanhã o chatbot já está no ar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEMO -->
+    <div class="demo-section" id="demo">
+        <h2>Veja funcionando agora</h2>
+        <p>Clique em um dos exemplos abaixo e teste você mesmo</p>
+        <div class="demo-links">
+            <a href="https://captivating-quietude-production-638f.up.railway.app/salao-da-ana" class="demo-btn rosa">✂️ Salão da Ana</a>
+            <a href="https://captivating-quietude-production-638f.up.railway.app/restaurante-do-joao" class="demo-btn laranja">🍽️ Restaurante do João</a>
+        </div>
+    </div>
+
+    <!-- PLANOS -->
+    <div class="section gray">
+        <div class="container">
+            <h2 class="section-title">Planos e <span>preços</span></h2>
+            <div class="planos">
+                <div class="plano">
+                    <h3>Básico</h3>
+                    <div class="preco">R$ 200<span>/mês</span></div>
+                    <ul>
+                        <li>Chatbot personalizado</li>
+                        <li>Até 5 informações</li>
+                        <li>Link exclusivo</li>
+                        <li>Suporte por WhatsApp</li>
+                    </ul>
+                    <a href="https://wa.me/55SEUNUMERO" class="btn-plano outline">Começar →</a>
+                </div>
+                <div class="plano destaque">
+                    <h3>Pro</h3>
+                    <div class="preco">R$ 350<span>/mês</span></div>
+                    <ul>
+                        <li>Tudo do Básico</li>
+                        <li>Informações ilimitadas</li>
+                        <li>Cores e logo do negócio</li>
+                        <li>Atualizações mensais</li>
+                        <li>Relatório de perguntas</li>
+                    </ul>
+                    <a href="https://wa.me/55SEUNUMERO" class="btn-plano">Quero o Pro →</a>
+                </div>
+                <div class="plano">
+                    <h3>Premium</h3>
+                    <div class="preco">R$ 500<span>/mês</span></div>
+                    <ul>
+                        <li>Tudo do Pro</li>
+                        <li>Atualizações ilimitadas</li>
+                        <li>Prioridade no suporte</li>
+                        <li>Consultoria mensal</li>
+                    </ul>
+                    <a href="https://wa.me/55SEUNUMERO" class="btn-plano outline">Começar →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTATO -->
+    <div class="contato">
+        <h2>Pronto para automatizar seu atendimento?</h2>
+        <p>Fale comigo agora e tenha seu chatbot funcionando em 24 horas</p>
+        <a href="https://wa.me/5513982275025" class="btn-whatsapp">💬 Falar no WhatsApp</a>
+    </div>
+
+    <footer>
+        <p>ChatBot IA — Desenvolvido por Deko Souza · Praia Grande, SP</p>
+    </footer>
+
+</body>
+</html>
