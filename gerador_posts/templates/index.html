@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Posts IA</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); min-height: 100vh; padding: 20px; display: flex; align-items: center; justify-content: center; }
+        .container { width: 100%; max-width: 560px; }
+        h1 { color: white; text-align: center; font-size: 24px; margin-bottom: 6px; }
+        .subtitle { color: rgba(255,255,255,0.8); text-align: center; font-size: 14px; margin-bottom: 24px; }
+        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+        .field { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 6px; }
+        input, select, textarea { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; font-family: Arial, sans-serif; }
+        input:focus, select:focus, textarea:focus { border-color: #667eea; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .resultado { margin-top: 20px; display: none; }
+        .resultado h3 { font-size: 14px; color: #555; margin-bottom: 10px; }
+        .post-box { background: #f8f9ff; border: 1px solid #e0e0ff; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.6; color: #333; white-space: pre-wrap; min-height: 100px; }
+        .btn-copiar { width: 100%; padding: 10px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 10px; }
+        .btn-copiar:hover { background: #20ba57; }
+        .btn-gerar-outro { width: 100%; padding: 10px; background: white; color: #667eea; border: 2px solid #667eea; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 8px; }
+        .powered { text-align: center; font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Gerador de Posts IA</h1>
+        <p class="subtitle">Crie posts profissionais para seu Instagram em segundos</p>
+
+        <div class="card">
+            <div class="field">
+                <label>Tipo de negócio</label>
+                <input type="text" id="tipo_negocio" placeholder="Ex: restaurante, salão de beleza, clínica...">
+            </div>
+
+            <div class="field">
+                <label>Tema do post</label>
+                <input type="text" id="tema" placeholder="Ex: promoção de segunda, novo prato, dica de beleza...">
+            </div>
+
+            <div class="row">
+                <div class="field">
+                    <label>Tom</label>
+                    <select id="tom">
+                        <option value="descontraído e simpático">Descontraído</option>
+                        <option value="profissional e elegante">Profissional</option>
+                        <option value="urgente e persuasivo">Urgente</option>
+                        <option value="educativo e informativo">Educativo</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Hashtags</label>
+                    <select id="hashtags">
+                        <option value="sim">Incluir</option>
+                        <option value="não">Sem hashtags</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" onclick="gerar()" id="btn-gerar">✨ Gerar Post</button>
+
+            <div class="resultado" id="resultado">
+                <h3>📝 Seu post gerado:</h3>
+                <div class="post-box" id="post-box"></div>
+                <button class="btn-copiar" onclick="copiar()">📋 Copiar post</button>
+                <button class="btn-gerar-outro" onclick="gerarOutro()">🔄 Gerar outro</button>
+            </div>
+        </div>
+
+        <p class="powered">Powered by ChatBot PG · chatbotpg.com.br</p>
+    </div>
+
+    <script>
+        async function gerar() {
+            const tipo = document.getElementById("tipo_negocio").value.trim();
+            const tema = document.getElementById("tema").value.trim();
+            const tom = document.getElementById("tom").value;
+            const hashtags = document.getElementById("hashtags").value;
+
+            if (!tipo || !tema) {
+                alert("Preencha o tipo de negócio e o tema!");
+                return;
+            }
+
+            const btn = document.getElementById("btn-gerar");
+            btn.disabled = true;
+            btn.textContent = "Gerando...";
+
+            const res = await fetch("/gerar", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    tipo_negocio: tipo,
+                    tema: tema,
+                    tom: tom,
+                    incluir_hashtags: hashtags
+                })
+            });
+
+            const data = await res.json();
+            btn.disabled = false;
+            btn.textContent = "✨ Gerar Post";
+
+            if (data.post) {
+                document.getElementById("post-box").textContent = data.post;
+                document.getElementById("resultado").style.display = "block";
+            }
+        }
+
+        function copiar() {
+            const texto = document.getElementById("post-box").textContent;
+            navigator.clipboard.writeText(texto);
+            const btn = document.querySelector(".btn-copiar");
+            btn.textContent = "✅ Copiado!";
+            setTimeout(() => btn.textContent = "📋 Copiar post", 2000);
+        }
+
+        function gerarOutro() {
+            document.getElementById("resultado").style.display = "none";
+            gerar();
+        }
+    </script>
+</body>
+</html>
