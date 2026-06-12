@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot IA - Seus Clientes</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 40px 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 8px; }
+        p { color: #666; margin-bottom: 30px; }
+        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
+        .card-info h2 { font-size: 16px; color: #1a1a2e; }
+        .card-info span { font-size: 13px; color: #666; }
+        .btn { padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 ChatBot IA</h1>
+        <p>Seus clientes ativos</p>
+        {% for negocio in clientes %}
+        <div class="card">
+            <div class="card-info">
+                <h2>{{ negocio.logo_emoji }} {{ negocio.nome }}</h2>
+                <span>{{ negocio.tipo }}</span>
+            </div>
+            <a href="/{{ negocio.slug }}" class="btn" style="background: {{ negocio.cor_primaria }}">
+                Abrir
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
