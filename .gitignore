@@ -1,3 +1,4 @@
 .env
 contatos_ia.txt
 **/__pycache__/
+*.db
