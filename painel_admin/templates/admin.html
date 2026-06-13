@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin — ChatBot PG</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
+        .navbar { background: #1a1a2e; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { font-size: 18px; }
+        .navbar a { color: #a5b4fc; font-size: 14px; text-decoration: none; }
+        .container { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .stat-num { font-size: 32px; font-weight: bold; color: #4f46e5; }
+        .stat-label { font-size: 13px; color: #666; margin-top: 4px; }
+        .section-title { font-size: 16px; font-weight: 500; color: #333; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-add { background: #4f46e5; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+        .table { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .table-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; padding: 14px 20px; border-bottom: 1px solid #f0f0f0; font-size: 14px; align-items: center; }
+        .table-row.header { background: #f8f9fa; font-weight: 500; font-size: 13px; color: #666; }
+        .table-row:last-child { border-bottom: none; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+        .badge.ativo { background: #dcfce7; color: #166534; }
+        .badge.inativo { background: #fee2e2; color: #dc2626; }
+        .btn-sm { padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; border: none; margin-right: 4px; }
+        .btn-ver { background: #e0e7ff; color: #4f46e5; }
+        .btn-pause { background: #fee2e2; color: #dc2626; }
+        .btn-ativar { background: #dcfce7; color: #166534; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+        .modal.show { display: flex; }
+        .modal-box { background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 460px; }
+        .modal-box h3 { font-size: 18px; margin-bottom: 20px; }
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; }
+        .field input, .field select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-submit { width: 100%; padding: 12px; background: #4f46e5; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; margin-top: 8px; }
+        .btn-cancel { width: 100%; padding: 10px; background: white; color: #666; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🤖 ChatBot PG — Painel Admin</h1>
+        <a href="/admin/logout">Sair</a>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-num">{{ clientes|length }}</div>
+                <div class="stat-label">Clientes cadastrados</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">{{ clientes|selectattr(8|string, 'equalto', 'ativo')|list|length }}</div>
+                <div class="stat-label">Clientes ativos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">R$ {{ (clientes|sum(attribute=6))|int }}</div>
+                <div class="stat-label">Receita mensal total</div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span>Clientes</span>
+            <button class="btn-add" onclick="document.getElementById('modal').classList.add('show')">+ Adicionar cliente</button>
+        </div>
+
+        <div class="table">
+            <div class="table-row header">
+                <span>Cliente</span>
+                <span>Plano</span>
+                <span>Valor</span>
+                <span>Mensagens</span>
+                <span>Status</span>
+                <span>Ações</span>
+            </div>
+            {% for c in clientes %}
+            <div class="table-row">
+                <div>
+                    <strong>{{ c[1] }}</strong><br>
+                    <small style="color:#999">{{ c[3] }} · /{{ c[2] }}</small>
+                </div>
+                <span>{{ c[5] }}</span>
+                <span>R$ {{ c[6]|int }}/mês</span>
+                <span>{{ c[10] }} msgs</span>
+                <span><span class="badge {{ c[8] }}">{{ c[8] }}</span></span>
+                <span>
+                    <a href="/admin/relatorio/{{ c[2] }}"><button class="btn-sm btn-ver">Ver</button></a>
+                    {% if c[8] == 'ativo' %}
+                    <a href="/admin/status/{{ c[2] }}/inativo"><button class="btn-sm btn-pause">Pausar</button></a>
+                    {% else %}
+                    <a href="/admin/status/{{ c[2] }}/ativo"><button class="btn-sm btn-ativar">Ativar</button></a>
+                    {% endif %}
+                </span>
+            </div>
+            {% else %}
+            <div style="padding:24px;text-align:center;color:#999;font-size:14px">
+                Nenhum cliente cadastrado ainda. Adicione o primeiro!
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-box">
+            <h3>Adicionar novo cliente</h3>
+            <form method="POST" action="/admin/adicionar">
+                <div class="field">
+                    <label>Nome do negócio</label>
+                    <input type="text" name="nome" placeholder="Ex: Salão da Ana" required>
+                </div>
+                <div class="row2">
+                    <div class="field">
+                        <label>Slug (URL)</label>
+                        <input type="text" name="slug" placeholder="salao-da-ana" required>
+                    </div>
+                    <div class="field">
+                        <label>Tipo</label>
+                        <input type="text" name="tipo" placeholder="Salão de beleza" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Telefone</label>
+                    <input type="text" name="telefone" placeholder="(13) 99999-1234">
+                </div>
+                <div class="row2">
+                    <div class="field">
+                        <label>Plano</label>
+                        <select name="plano">
+                            <option>Básico</option>
+                            <option selected>Pro</option>
+                            <option>Premium</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Valor (R$)</label>
+                        <input type="number" name="valor" value="350">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Dia de vencimento</label>
+                    <input type="number" name="vencimento" value="10" min="1" max="28">
+                </div>
+                <button type="submit" class="btn-submit">Adicionar cliente</button>
+                <button type="button" class="btn-cancel" onclick="document.getElementById('modal').classList.remove('show')">Cancelar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
