@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar — {{ negocio.nome }}</title>
+    <style>
+        :root { --cor: {{ negocio.cor }}; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; }
+        .header { background: var(--cor); color: white; padding: 20px; text-align: center; }
+        .header h1 { font-size: 22px; }
+        .header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+        .container { max-width: 560px; margin: 0 auto; padding: 24px 16px; }
+        .step { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: none; }
+        .step.ativo { display: block; }
+        .step h2 { font-size: 16px; color: #333; margin-bottom: 16px; }
+        .step-num { display: inline-block; background: var(--cor); color: white; width: 24px; height: 24px; border-radius: 50%; font-size: 13px; text-align: center; line-height: 24px; margin-right: 8px; }
+        .servico-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .servico-btn { border: 2px solid #e5e7eb; border-radius: 10px; padding: 14px; cursor: pointer; background: white; text-align: left; transition: border-color 0.15s; }
+        .servico-btn:hover { border-color: var(--cor); }
+        .servico-btn.selecionado { border-color: var(--cor); background: #fdf0f7; }
+        .servico-btn strong { display: block; font-size: 14px; color: #333; margin-bottom: 4px; }
+        .servico-btn span { font-size: 13px; color: #888; }
+        .datas { display: flex; gap: 8px; flex-wrap: wrap; }
+        .data-btn { border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; cursor: pointer; background: white; font-size: 13px; transition: border-color 0.15s; }
+        .data-btn:hover { border-color: var(--cor); }
+        .data-btn.selecionado { border-color: var(--cor); background: #fdf0f7; }
+        .horarios { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .hora-btn { border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px; cursor: pointer; background: white; font-size: 14px; text-align: center; transition: border-color 0.15s; }
+        .hora-btn:hover { border-color: var(--cor); }
+        .hora-btn.selecionado { border-color: var(--cor); background: #fdf0f7; }
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
+        .field input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
+        .field input:focus { border-color: var(--cor); }
+        .btn { width: 100%; padding: 14px; background: var(--cor); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-voltar { width: 100%; padding: 10px; background: white; color: #666; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 8px; }
+        .resumo { background: #f8f9ff; border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 14px; color: #333; line-height: 1.8; }
+        .sucesso { text-align: center; padding: 20px; }
+        .sucesso .emoji { font-size: 48px; margin-bottom: 16px; }
+        .sucesso h2 { font-size: 20px; color: #333; margin-bottom: 8px; }
+        .sucesso p { font-size: 14px; color: #666; line-height: 1.6; }
+        .btn-whatsapp { display: block; background: #25D366; color: white; padding: 14px; border-radius: 8px; text-align: center; text-decoration: none; font-size: 15px; font-weight: bold; margin-top: 16px; }
+        .loading { text-align: center; color: #999; font-size: 14px; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📅 {{ negocio.nome }}</h1>
+        <p>Agendamento online — rápido e fácil</p>
+    </div>
+
+    <div class="container">
+        <!-- STEP 1: Serviço -->
+        <div class="step ativo" id="step1">
+            <h2><span class="step-num">1</span> Escolha o serviço</h2>
+            <div class="servico-grid">
+                {% for s in negocio.servicos %}
+                <button class="servico-btn" onclick="selecionarServico('{{ s.nome }}', '{{ s.preco }}')">
+                    <strong>{{ s.nome }}</strong>
+                    <span>{{ s.preco }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- STEP 2: Data -->
+        <div class="step" id="step2">
+            <h2><span class="step-num">2</span> Escolha a data</h2>
+            <div class="datas">
+                {% for d in datas %}
+                <button class="data-btn" onclick="selecionarData('{{ d.valor }}', '{{ d.label }}')">{{ d.label }}</button>
+                {% endfor %}
+            </div>
+            <button class="btn-voltar" onclick="voltar(1)">← Voltar</button>
+        </div>
+
+        <!-- STEP 3: Horário -->
+        <div class="step" id="step3">
+            <h2><span class="step-num">3</span> Escolha o horário</h2>
+            <div class="horarios" id="horarios-container">
+                <div class="loading">Carregando horários...</div>
+            </div>
+            <button class="btn-voltar" onclick="voltar(2)">← Voltar</button>
+        </div>
+
+        <!-- STEP 4: Dados -->
+        <div class="step" id="step4">
+            <h2><span class="step-num">4</span> Seus dados</h2>
+            <div class="resumo" id="resumo"></div>
+            <div class="field">
+                <label>Seu nome</label>
+                <input type="text" id="nome" placeholder="Como prefere ser chamado?">
+            </div>
+            <div class="field">
+                <label>WhatsApp</label>
+                <input type="tel" id="telefone" placeholder="(13) 99999-9999">
+            </div>
+            <button class="btn" onclick="confirmar()">Confirmar agendamento ✓</button>
+            <button class="btn-voltar" onclick="voltar(3)">← Voltar</button>
+        </div>
+
+        <!-- STEP 5: Sucesso -->
+        <div class="step" id="step5">
+            <div class="sucesso">
+                <div class="emoji">🎉</div>
+                <h2>Agendamento confirmado!</h2>
+                <p id="msg-sucesso"></p>
+                <a id="btn-whatsapp" class="btn-whatsapp" target="_blank">💬 Confirmar pelo WhatsApp</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selecionado = { servico: "", preco: "", data: "", dataLabel: "", horario: "" };
+
+        function selecionarServico(nome, preco) {
+            selecionado.servico = nome;
+            selecionado.preco = preco;
+            document.querySelectorAll(".servico-btn").forEach(b => b.classList.remove("selecionado"));
+            event.target.closest(".servico-btn").classList.add("selecionado");
+            setTimeout(() => irPara(2), 300);
+        }
+
+        function selecionarData(valor, label) {
+            selecionado.data = valor;
+            selecionado.dataLabel = label;
+            document.querySelectorAll(".data-btn").forEach(b => b.classList.remove("selecionado"));
+            event.target.classList.add("selecionado");
+            carregarHorarios(valor);
+            setTimeout(() => irPara(3), 300);
+        }
+
+        async function carregarHorarios(data) {
+            document.getElementById("horarios-container").innerHTML = '<div class="loading">Carregando...</div>';
+            const res = await fetch(`/horarios-disponiveis?data=${data}`);
+            const horarios = await res.json();
+            if (horarios.length === 0) {
+                document.getElementById("horarios-container").innerHTML = '<p style="color:#999;font-size:14px">Nenhum horário disponível nesta data.</p>';
+                return;
+            }
+            document.getElementById("horarios-container").innerHTML = horarios.map(h =>
+                `<button class="hora-btn" onclick="selecionarHorario('${h}')">${h}</button>`
+            ).join("");
+        }
+
+        function selecionarHorario(horario) {
+            selecionado.horario = horario;
+            document.querySelectorAll(".hora-btn").forEach(b => b.classList.remove("selecionado"));
+            event.target.classList.add("selecionado");
+            atualizarResumo();
+            setTimeout(() => irPara(4), 300);
+        }
+
+        function atualizarResumo() {
+            document.getElementById("resumo").innerHTML = `
+                📋 <strong>Serviço:</strong> ${selecionado.servico} — ${selecionado.preco}<br>
+                📅 <strong>Data:</strong> ${selecionado.dataLabel}<br>
+                🕐 <strong>Horário:</strong> ${selecionado.horario}
+            `;
+        }
+
+        async function confirmar() {
+            const nome = document.getElementById("nome").value.trim();
+            const telefone = document.getElementById("telefone").value.trim();
+            if (!nome || !telefone) { alert("Preencha seu nome e WhatsApp!"); return; }
+
+            const res = await fetch("/agendar", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ ...selecionado, nome, telefone })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                document.getElementById("msg-sucesso").textContent =
+                    `${selecionado.servico} agendado para ${selecionado.dataLabel} às ${selecionado.horario}. Te esperamos, ${nome}!`;
+                const msg = encodeURIComponent(`Olá! Acabei de agendar pelo site:\n\nServiço: ${selecionado.servico}\nData: ${selecionado.dataLabel}\nHorário: ${selecionado.horario}\nNome: ${nome}`);
+                document.getElementById("btn-whatsapp").href = `https://wa.me/{{ negocio.whatsapp }}?text=${msg}`;
+                irPara(5);
+            }
+        }
+
+        function irPara(step) {
+            document.querySelectorAll(".step").forEach(s => s.classList.remove("ativo"));
+            document.getElementById(`step${step}`).classList.add("ativo");
+            window.scrollTo(0, 0);
+        }
+
+        function voltar(step) { irPara(step); }
+    </script>
+</body>
+</html>
