@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Checkout — {{ loja.nome }}{% endblock %}
+{% block extra_style %}
+<style>
+    .checkout-container { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
+    h1 { font-size: 22px; margin-bottom: 24px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    .card h2 { font-size: 16px; margin-bottom: 16px; color: #333; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 13px; color: #555; margin-bottom: 6px; }
+    .field input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+    .field input:focus { border-color: var(--cor); }
+    .item-resumo { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .total-linha { display: flex; justify-content: space-between; padding: 14px 0 0; font-size: 18px; font-weight: bold; color: var(--cor); }
+    .btn-pagar { width: 100%; padding: 16px; background: var(--cor); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .btn-pagar:disabled { opacity: 0.5; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="checkout-container">
+    <h1>📦 Finalizar Pedido</h1>
+    <div class="grid2">
+        <div>
+            <div class="card">
+                <h2>Seus dados</h2>
+                <div class="field"><label>Nome completo</label><input type="text" id="nome" placeholder="Seu nome"></div>
+                <div class="field"><label>E-mail</label><input type="email" id="email" placeholder="seu@email.com"></div>
+                <div class="field"><label>WhatsApp</label><input type="tel" id="telefone" placeholder="(13) 99999-9999"></div>
+                <div class="field"><label>Endereço de entrega</label><input type="text" id="endereco" placeholder="Rua, número, bairro, cidade"></div>
+            </div>
+        </div>
+        <div>
+            <div class="card">
+                <h2>Resumo do pedido</h2>
+                <div id="resumo-itens"></div>
+                <div class="total-linha"><span>Total</span><span id="total-valor">R$ 0,00</span></div>
+                <button class="btn-pagar" onclick="finalizar()" style="margin-top:16px">Confirmar pedido ✓</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_script %}
+<script>
+const carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+const total = carrinho.reduce((s, i) => s + i.preco * i.quantidade, 0);
+const frete = total >= 150 ? 0 : 19.90;
+const totalFinal = total + frete;
+
+document.getElementById("resumo-itens").innerHTML = carrinho.map(i =>
+    `<div class="item-resumo"><span>${i.nome} x${i.quantidade}</span><span>R$ ${(i.preco * i.quantidade).toFixed(2)}</span></div>`
+).join("") + `<div class="item-resumo"><span>Frete</span><span>${frete === 0 ? "Grátis" : "R$ " + frete.toFixed(2)}</span></div>`;
+
+document.getElementById("total-valor").textContent = `R$ ${totalFinal.toFixed(2)}`;
+
+async function finalizar() {
+    const nome = document.getElementById("nome").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const telefone = document.getElementById("telefone").value.trim();
+    const endereco = document.getElementById("endereco").value.trim();
+    if (!nome || !email || !telefone || !endereco) { alert("Preencha todos os campos!"); return; }
+    if (carrinho.length === 0) { alert("Carrinho vazio!"); return; }
+
+    const res = await fetch("/checkout", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ nome, email, telefone, endereco, itens: carrinho, total: totalFinal })
+    });
+    const data = await res.json();
+    if (data.ok) {
+        localStorage.removeItem("carrinho");
+        window.location = `/confirmacao/${data.pedido_id}`;
+    }
+}
+</script>
+{% endblock %}

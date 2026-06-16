@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ loja.nome }}{% endblock %}</title>
+    <style>
+        :root { --cor: {{ loja.cor }}; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f8f9fa; color: #333; }
+        .navbar { background: var(--cor); color: white; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .navbar-brand { font-size: 20px; font-weight: bold; text-decoration: none; color: white; }
+        .navbar-links { display: flex; gap: 24px; align-items: center; }
+        .navbar-links a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 15px; }
+        .navbar-links a:hover { color: white; }
+        .carrinho-btn { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; cursor: pointer; color: white; border: none; position: relative; }
+        .carrinho-count { background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+        .btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-size: 15px; cursor: pointer; border: none; font-weight: bold; text-decoration: none; text-align: center; }
+        .btn-primary { background: var(--cor); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-outline { background: white; color: var(--cor); border: 2px solid var(--cor); }
+        .btn-outline:hover { background: #f0f4ff; }
+        footer { background: #1a1a2e; color: #999; text-align: center; padding: 20px; font-size: 13px; margin-top: 40px; }
+    </style>
+    {% block extra_style %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">🛍️ {{ loja.nome }}</a>
+        <div class="navbar-links">
+            <a href="/produtos">Produtos</a>
+            <a href="/carrinho">
+                <button class="carrinho-btn" onclick="window.location='/carrinho'">
+                    🛒 Carrinho <span class="carrinho-count" id="nav-count">0</span>
+                </button>
+            </a>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+        <p>{{ loja.nome }} · {{ loja.descricao }}</p>
+    </footer>
+
+    <script>
+        function atualizarContador() {
+            const carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+            const total = carrinho.reduce((s, i) => s + i.quantidade, 0);
+            document.getElementById("nav-count").textContent = total;
+        }
+        atualizarContador();
+    </script>
+    {% block extra_script %}{% endblock %}
+</body>
+</html>

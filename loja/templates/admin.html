@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — {{ loja.nome }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; }
+        .navbar { background: #1a1a2e; color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { font-size: 18px; }
+        .navbar a { color: #a5b4fc; font-size: 14px; text-decoration: none; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .stat-num { font-size: 28px; font-weight: bold; color: #2563eb; }
+        .stat-label { font-size: 13px; color: #666; margin-top: 4px; }
+        .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section h2 { font-size: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .table-row { display: grid; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; align-items: center; }
+        .pedido-row { grid-template-columns: 0.5fr 1.5fr 1fr 1fr 1fr 1fr; }
+        .prod-row { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; }
+        .header-row { font-weight: 500; font-size: 13px; color: #666; background: #f8f9fa; padding: 10px 0; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; }
+        .badge.pendente { background: #fef9c3; color: #854d0e; }
+        .badge.confirmado { background: #dcfce7; color: #166534; }
+        .badge.enviado { background: #dbeafe; color: #1e40af; }
+        .badge.cancelado { background: #fee2e2; color: #dc2626; }
+        .badge.ativo { background: #dcfce7; color: #166534; }
+        .badge.inativo { background: #f3f4f6; color: #666; }
+        .btn-sm { padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; border: none; margin-right: 4px; text-decoration: none; display: inline-block; }
+        .btn-confirmar { background: #dcfce7; color: #166534; }
+        .btn-enviar { background: #dbeafe; color: #1e40af; }
+        .btn-cancelar { background: #fee2e2; color: #dc2626; }
+        .btn-toggle { background: #f3f4f6; color: #666; }
+        .form-add { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .form-add input, .form-add select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+        .btn-add { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+        .loja-link { color: #2563eb; font-size: 13px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🛍️ {{ loja.nome }} — Admin</h1>
+        <div style="display:flex;gap:16px;align-items:center">
+            <a href="/" class="loja-link" target="_blank">Ver loja ↗</a>
+            <a href="/admin/logout">Sair</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-num">{{ pedidos|length }}</div>
+                <div class="stat-label">Pedidos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">{{ pedidos|selectattr(6, 'equalto', 'pendente')|list|length }}</div>
+                <div class="stat-label">Pendentes</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">{{ produtos|length }}</div>
+                <div class="stat-label">Produtos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">R$ {{ "%.0f"|format(total_receita) }}</div>
+                <div class="stat-label">Receita total</div>
+            </div>
+        </div>
+
+        <!-- PEDIDOS -->
+        <div class="section">
+            <h2>Pedidos</h2>
+            <div class="table-row pedido-row header-row">
+                <span>#</span><span>Cliente</span><span>Total</span><span>Status</span><span>Data</span><span>Ações</span>
+            </div>
+            {% for p in pedidos %}
+            <div class="table-row pedido-row">
+                <span>#{{ p[0] }}</span>
+                <div><strong>{{ p[1] }}</strong><br><small style="color:#999">{{ p[3] }}</small></div>
+                <span>R$ {{ "%.2f"|format(p[5]) }}</span>
+                <span><span class="badge {{ p[6] }}">{{ p[6] }}</span></span>
+                <span style="font-size:12px">{{ p[7] }}</span>
+                <span>
+                    {% if p[6] == 'pendente' %}
+                    <a href="/admin/pedido/{{ p[0] }}/confirmado" class="btn-sm btn-confirmar">Confirmar</a>
+                    {% elif p[6] == 'confirmado' %}
+                    <a href="/admin/pedido/{{ p[0] }}/enviado" class="btn-sm btn-enviar">Enviar</a>
+                    {% endif %}
+                    <a href="/admin/pedido/{{ p[0] }}/cancelado" class="btn-sm btn-cancelar">Cancelar</a>
+                </span>
+            </div>
+            {% else %}
+            <div style="padding:24px;text-align:center;color:#999;font-size:14px">Nenhum pedido ainda.</div>
+            {% endfor %}
+        </div>
+
+        <!-- PRODUTOS -->
+        <div class="section">
+            <h2>
+                <span>Produtos</span>
+            </h2>
+            <form method="POST" action="/admin/produto/adicionar" style="margin-bottom:20px">
+                <div class="form-add">
+                    <input type="text" name="nome" placeholder="Nome do produto" required>
+                    <input type="text" name="descricao" placeholder="Descrição">
+                    <input type="number" name="preco" placeholder="Preço" step="0.01" required>
+                    <input type="number" name="preco_original" placeholder="Preço original (opcional)" step="0.01">
+                    <input type="text" name="categoria" placeholder="Categoria" required>
+                    <input type="number" name="estoque" placeholder="Estoque" required>
+                    <select name="destaque">
+                        <option value="0">Sem destaque</option>
+                        <option value="1">Destaque</option>
+                    </select>
+                    <button type="submit" class="btn-add">+ Adicionar produto</button>
+                </div>
+            </form>
+
+            <div class="table-row prod-row header-row">
+                <span>Produto</span><span>Preço</span><span>Estoque</span><span>Categoria</span><span>Status</span>
+            </div>
+            {% for p in produtos %}
+            <div class="table-row prod-row">
+                <strong>{{ p[1] }}</strong>
+                <span>R$ {{ "%.2f"|format(p[3]) }}</span>
+                <span>{{ p[6] }} un.</span>
+                <span>{{ p[5] }}</span>
+                <span>
+                    <span class="badge {% if p[9] %}ativo{% else %}inativo{% endif %}">
+                        {% if p[9] %}ativo{% else %}inativo{% endif %}
+                    </span>
+                    <a href="/admin/produto/toggle/{{ p[0] }}" class="btn-sm btn-toggle">Toggle</a>
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

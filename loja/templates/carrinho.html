@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Carrinho — {{ loja.nome }}{% endblock %}
+{% block extra_style %}
+<style>
+    .carrinho-container { max-width: 700px; margin: 0 auto; padding: 24px 16px; }
+    h1 { font-size: 22px; margin-bottom: 24px; }
+    .item { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .item-info h3 { font-size: 15px; margin-bottom: 4px; }
+    .item-info span { font-size: 14px; color: #666; }
+    .item-controls { display: flex; align-items: center; gap: 12px; }
+    .qtd-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--cor); background: white; color: var(--cor); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .qtd { font-size: 16px; font-weight: bold; min-width: 20px; text-align: center; }
+    .item-preco { font-size: 16px; font-weight: bold; color: var(--cor); min-width: 80px; text-align: right; }
+    .btn-remover { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; }
+    .resumo { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .resumo-linha { display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; border-bottom: 1px solid #f0f0f0; }
+    .resumo-total { display: flex; justify-content: space-between; padding: 14px 0 0; font-size: 18px; font-weight: bold; color: var(--cor); }
+    .btn-checkout { width: 100%; padding: 16px; background: var(--cor); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 16px; }
+    .vazio { text-align: center; padding: 60px; color: #999; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="carrinho-container">
+    <h1>🛒 Seu Carrinho</h1>
+    <div id="lista-carrinho"></div>
+    <div id="resumo-carrinho"></div>
+</div>
+{% endblock %}
+{% block extra_script %}
+<script>
+function renderCarrinho() {
+    const carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+    const lista = document.getElementById("lista-carrinho");
+    const resumo = document.getElementById("resumo-carrinho");
+
+    if (carrinho.length === 0) {
+        lista.innerHTML = '<div class="vazio">😕 Seu carrinho está vazio.<br><a href="/produtos" style="color:var(--cor)">Ver produtos →</a></div>';
+        resumo.innerHTML = "";
+        return;
+    }
+
+    lista.innerHTML = carrinho.map((item, i) => `
+        <div class="item">
+            <div class="item-info">
+                <h3>${item.nome}</h3>
+                <span>R$ ${item.preco.toFixed(2)} cada</span>
+            </div>
+            <div class="item-controls">
+                <button class="qtd-btn" onclick="mudarQtd(${i}, -1)">−</button>
+                <span class="qtd">${item.quantidade}</span>
+                <button class="qtd-btn" onclick="mudarQtd(${i}, 1)">+</button>
+                <button class="btn-remover" onclick="remover(${i})">🗑</button>
+            </div>
+            <div class="item-preco">R$ ${(item.preco * item.quantidade).toFixed(2)}</div>
+        </div>
+    `).join("");
+
+    const total = carrinho.reduce((s, i) => s + i.preco * i.quantidade, 0);
+    const frete = total >= 150 ? 0 : 19.90;
+    resumo.innerHTML = `
+        <div class="resumo">
+            ${carrinho.map(i => `<div class="resumo-linha"><span>${i.nome} x${i.quantidade}</span><span>R$ ${(i.preco * i.quantidade).toFixed(2)}</span></div>`).join("")}
+            <div class="resumo-linha"><span>Frete</span><span>${frete === 0 ? "Grátis 🎉" : "R$ " + frete.toFixed(2)}</span></div>
+            <div class="resumo-total"><span>Total</span><span>R$ ${(total + frete).toFixed(2)}</span></div>
+            <button class="btn-checkout" onclick="window.location='/checkout'">Finalizar pedido →</button>
+        </div>
+    `;
+    atualizarContador();
+}
+
+function mudarQtd(i, delta) {
+    let carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+    carrinho[i].quantidade += delta;
+    if (carrinho[i].quantidade <= 0) carrinho.splice(i, 1);
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+    renderCarrinho();
+}
+
+function remover(i) {
+    let carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+    carrinho.splice(i, 1);
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+    renderCarrinho();
+}
+
+renderCarrinho();
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ loja.nome }} — Início{% endblock %}
+{% block extra_style %}
+<style>
+    .hero { background: linear-gradient(135deg, var(--cor), #1d4ed8); color: white; padding: 80px 24px; text-align: center; }
+    .hero h1 { font-size: 36px; margin-bottom: 16px; }
+    .hero p { font-size: 18px; opacity: 0.85; margin-bottom: 32px; }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-white { background: white; color: var(--cor); padding: 14px 28px; border-radius: 8px; font-size: 15px; font-weight: bold; text-decoration: none; }
+    .section-title { font-size: 22px; font-weight: bold; margin-bottom: 24px; color: #1a1a2e; }
+    .produtos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+    .produto-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: transform 0.2s; }
+    .produto-card:hover { transform: translateY(-4px); }
+    .produto-img { width: 100%; height: 180px; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); display: flex; align-items: center; justify-content: center; font-size: 48px; }
+    .produto-info { padding: 16px; }
+    .produto-nome { font-size: 15px; font-weight: 500; margin-bottom: 8px; color: #1a1a2e; }
+    .produto-preco { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .preco-atual { font-size: 18px; font-weight: bold; color: var(--cor); }
+    .preco-original { font-size: 13px; color: #999; text-decoration: line-through; }
+    .badge-off { background: #dcfce7; color: #166534; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+    .btn-card { width: 100%; padding: 10px; background: var(--cor); color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .cats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+    .cat-btn { padding: 8px 18px; border-radius: 20px; border: 2px solid var(--cor); color: var(--cor); background: white; font-size: 14px; cursor: pointer; text-decoration: none; }
+    .cat-btn:hover { background: var(--cor); color: white; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero">
+    <h1>{{ loja.nome }}</h1>
+    <p>{{ loja.descricao }}</p>
+    <div class="hero-btns">
+        <a href="/produtos" class="btn-white">Ver produtos →</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="cats">
+        {% for cat in categorias %}
+        <a href="/produtos?categoria={{ cat }}" class="cat-btn">{{ cat }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="section-title">⭐ Destaques</div>
+    <div class="produtos-grid">
+        {% for p in destaques %}
+        <div class="produto-card">
+            <a href="/produto/{{ p[0] }}" style="text-decoration:none">
+                <div class="produto-img">🛍️</div>
+                <div class="produto-info">
+                    <div class="produto-nome">{{ p[1] }}</div>
+                    <div class="produto-preco">
+                        <span class="preco-atual">R$ {{ "%.2f"|format(p[3]) }}</span>
+                        {% if p[4] %}
+                        <span class="preco-original">R$ {{ "%.2f"|format(p[4]) }}</span>
+                        {% endif %}
+                    </div>
+                    <button class="btn-card" onclick="adicionarCarrinho({{ p[0] }}, '{{ p[1] }}', {{ p[3] }}, event)">
+                        🛒 Adicionar
+                    </button>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_script %}
+<script>
+function adicionarCarrinho(id, nome, preco, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    let carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+    const idx = carrinho.findIndex(i => i.id === id);
+    if (idx >= 0) {
+        carrinho[idx].quantidade += 1;
+    } else {
+        carrinho.push({id, nome, preco, quantidade: 1});
+    }
+    localStorage.setItem("carrinho", JSON.stringify(carrinho));
+    atualizarContador();
+    alert(`"${nome}" adicionado ao carrinho! 🛒`);
+}
+</script>
+{% endblock %}

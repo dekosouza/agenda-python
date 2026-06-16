@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Pedido Confirmado — {{ loja.nome }}{% endblock %}
+{% block content %}
+<div style="text-align:center;padding:60px 20px">
+    <div style="font-size:64px;margin-bottom:24px">🎉</div>
+    <h1 style="font-size:28px;color:#1a1a2e;margin-bottom:12px">Pedido confirmado!</h1>
+    <p style="font-size:16px;color:#666;margin-bottom:8px">Pedido #{{ pedido_id }} recebido com sucesso.</p>
+    <p style="font-size:15px;color:#666;margin-bottom:32px">Entraremos em contato pelo WhatsApp para confirmar a entrega.</p>
+    <a href="/produtos" class="btn btn-primary">Continuar comprando →</a>
+</div>
+{% endblock %}
