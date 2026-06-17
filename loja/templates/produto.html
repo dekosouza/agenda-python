@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ produto[1] }} — {{ loja.nome }}{% endblock %}
+{% block extra_style %}
+<style>
+    .produto-container { max-width: 900px; margin: 0 auto; padding: 32px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    .produto-img-grande { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 80px; overflow: hidden; }
+    .produto-img-grande img { width: 100%; height: 100%; object-fit: cover; }
+    .produto-info h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 12px; }
+    .produto-desc { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 20px; }
+    .preco-box { margin-bottom: 24px; }
+    .preco-atual { font-size: 32px; font-weight: bold; color: var(--cor); }
+    .preco-original { font-size: 16px; color: #999; text-decoration: line-through; margin-left: 8px; }
+    .badge-off { background: #dcfce7; color: #166534; font-size: 13px; padding: 4px 12px; border-radius: 20px; margin-left: 8px; }
+    .estoque { font-size: 14px; color: #666; margin-bottom: 20px; }
+    .qtd-box { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .qtd-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--cor); background: white; color: var(--cor); font-size: 20px; cursor: pointer; }
+    .qtd-num { font-size: 18px; font-weight: bold; min-width: 30px; text-align: center; }
+    .btn-adicionar { width: 100%; padding: 16px; background: var(--cor); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .btn-voltar { display: inline-block; color: var(--cor); text-decoration: none; font-size: 14px; margin-bottom: 16px; padding: 8px 0; }
+    @media (max-width: 600px) { .produto-container { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="produto-container">
+    <div>
+        <a href="/produtos" class="btn-voltar">← Voltar aos produtos</a>
+        <div class="produto-img-grande">
+            {% if produto[7] and produto[7] != 'sem-imagem.jpg' %}
+            <img src="{{ url_for('static', filename='img/' + produto[7]) }}" alt="{{ produto[1] }}">
+            {% else %}
+            🛍️
+            {% endif %}
+        </div>
+    </div>
+    <div class="produto-info">
+        <p style="font-size:13px;color:#999;margin-bottom:8px">{{ produto[5] }}</p>
+        <h1>{{ produto[1] }}</h1>
+        <p class="produto-desc">{{ produto[2] }}</p>
+        <div class="preco-box">
+            <span class="preco-atual">R$ {{ "%.2f"|format(produto[3]) }}</span>
+            {% if produto[4] %}
+            <span class="preco-original">R$ {{ "%.2f"|format(produto[4]) }}</span>
+            {% set desconto = ((produto[4] - produto[3]) / produto[4] * 100)|int %}
+            <span class="badge-off">-{{ desconto }}%</span>
+            {% endif %}
+        </div>
+        <p class="estoque">✅ {{ produto[6] }} em estoque</p>
+        <div class="qtd-box">
+            <button class="qtd-btn" onclick="mudar(-1)">−</button>
+            <span class="qtd-num" id="qtd">1</span>
+            <button class="qtd-btn" onclick="mudar(1)">+</button>
+            <span style="font-size:14px;color:#666">quantidade</span>
+        </div>
+        <button class="btn-adicionar" onclick="adicionar()">🛒 Adicionar ao carrinho</button>
+    </div>
+</div>
+{% endblock %}
+{% block extra_script %}
+<script>
+    let qtd = 1;
+    const estoque = {{ produto[6] }};
+
+    function mudar(delta) {
+        qtd = Math.max(1, Math.min(estoque, qtd + delta));
+        document.getElementById("qtd").textContent = qtd;
+    }
+
+    function adicionar() {
+        let carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+        const idx = carrinho.findIndex(i => i.id === {{ produto[0] }});
+        if (idx >= 0) { carrinho[idx].quantidade += qtd; }
+        else { carrinho.push({ id: {{ produto[0] }}, nome: "{{ produto[1] }}", preco: {{ produto[3] }}, quantidade: qtd }); }
+        localStorage.setItem("carrinho", JSON.stringify(carrinho));
+        atualizarContador();
+        alert(`"{{ produto[1] }}" adicionado ao carrinho! 🛒`);
+    }
+</script>
+{% endblock %}

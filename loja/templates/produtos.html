@@ -9,10 +9,10 @@
     .produtos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 24px; }
     .produto-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
     .produto-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-    .produto-img { width: 100%; height: 180px; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); display: flex; align-items: center; justify-content: center; font-size: 48px; }
+    .produto-img { width: 100%; height: 180px; background: linear-gradient(135deg, #e0e7ff, #c7d2fe); display: flex; align-items: center; justify-content: center; font-size: 48px; overflow: hidden; }
     .produto-info { padding: 16px; }
     .produto-nome { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
-    .produto-preco { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .produto-preco { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
     .preco-atual { font-size: 18px; font-weight: bold; color: var(--cor); }
     .preco-original { font-size: 13px; color: #999; text-decoration: line-through; }
     .btn-card { width: 100%; padding: 10px; background: var(--cor); color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
@@ -37,7 +37,13 @@
         {% for p in produtos %}
         <div class="produto-card">
             <a href="/produto/{{ p[0] }}" style="text-decoration:none;color:inherit">
-                <div class="produto-img">🛍️</div>
+                <div class="produto-img">
+                    {% if p[7] and p[7] != 'sem-imagem.jpg' %}
+                    <img src="{{ url_for('static', filename='img/' + p[7]) }}" style="width:100%;height:100%;object-fit:cover">
+                    {% else %}
+                    🛍️
+                    {% endif %}
+                </div>
                 <div class="produto-info">
                     <div class="produto-nome">{{ p[1] }}</div>
                     <div class="produto-preco">

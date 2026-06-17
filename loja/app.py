@@ -1,12 +1,16 @@
 import os
+import uuid
 from flask import Flask, render_template, request, jsonify, redirect, session
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+from PIL import Image
 from database import (inicializar, listar_produtos, produto_por_id, produtos_destaque,
                       categorias, criar_pedido, listar_pedidos, itens_do_pedido,
                       atualizar_status_pedido, listar_produtos_admin, adicionar_produto, alternar_ativo)
 
 load_dotenv()
 app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 app.secret_key = "loja2024secretkey"
 
 LOJA = {
@@ -17,6 +21,25 @@ LOJA = {
 }
 
 SENHA_ADMIN = os.getenv("SENHA_ADMIN", "admin123")
+
+UPLOAD_FOLDER = "static/img"
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def salvar_imagem(arquivo):
+    ext = arquivo.filename.rsplit(".", 1)[1].lower()
+    nome = f"{uuid.uuid4().hex}.{ext}"
+    caminho = os.path.join(app.config["UPLOAD_FOLDER"], nome)
+    img = Image.open(arquivo)
+    img = img.convert("RGB")
+    img.thumbnail((600, 600))
+    img.save(caminho, quality=85, optimize=True)
+    return nome
 
 inicializar()
 
@@ -71,10 +94,10 @@ def admin():
     if not session.get("logado"):
         return redirect("/admin/login")
     pedidos = listar_pedidos()
-    produtos = listar_produtos_admin()
+    prods = listar_produtos_admin()
     total_receita = sum(p[5] for p in pedidos if p[6] != "cancelado")
     return render_template("admin.html", loja=LOJA, pedidos=pedidos,
-                           produtos=produtos, total_receita=total_receita)
+                           produtos=prods, total_receita=total_receita)
 
 @app.route("/admin/login", methods=["GET", "POST"])
 def login():
@@ -102,6 +125,13 @@ def mudar_status(id, status):
 def add_produto():
     if not session.get("logado"):
         return redirect("/admin/login")
+
+    imagem = "sem-imagem.jpg"
+    if "imagem" in request.files:
+        arquivo = request.files["imagem"]
+        if arquivo and arquivo.filename and allowed_file(arquivo.filename):
+            imagem = salvar_imagem(arquivo)
+
     adicionar_produto(
         request.form.get("nome"),
         request.form.get("descricao"),
@@ -109,7 +139,8 @@ def add_produto():
         request.form.get("preco_original") or None,
         request.form.get("categoria"),
         request.form.get("estoque"),
-        request.form.get("destaque", 0)
+        request.form.get("destaque", 0),
+        imagem
     )
     return redirect("/admin")
 

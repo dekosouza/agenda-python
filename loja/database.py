@@ -47,16 +47,15 @@ def inicializar():
         )
     """)
 
-    # Produtos de exemplo
     cursor.execute("SELECT COUNT(*) FROM produtos")
     if cursor.fetchone()[0] == 0:
         produtos_iniciais = [
-            ("Camiseta Básica Branca", "100% algodão, confortável para o dia a dia", 49.90, 79.90, "Roupas", 50, "camiseta.jpg", 1),
-            ("Calça Jeans Slim", "Jeans premium com elastano para maior conforto", 129.90, 199.90, "Roupas", 30, "calca.jpg", 1),
-            ("Tênis Casual", "Leve e confortável para uso diário", 189.90, 249.90, "Calçados", 25, "tenis.jpg", 1),
-            ("Boné Ajustável", "Aba curva, regulagem traseira", 39.90, None, "Acessórios", 40, "bone.jpg", 0),
-            ("Mochila Urbana", "15 litros, impermeável, porta notebook", 159.90, 219.90, "Acessórios", 20, "mochila.jpg", 1),
-            ("Meias Kit 6 pares", "Algodão premium, cano médio", 49.90, None, "Roupas", 100, "meias.jpg", 0),
+            ("Camiseta Básica Branca", "100% algodão, confortável para o dia a dia", 49.90, 79.90, "Roupas", 50, "sem-imagem.jpg", 1),
+            ("Calça Jeans Slim", "Jeans premium com elastano", 129.90, 199.90, "Roupas", 30, "sem-imagem.jpg", 1),
+            ("Tênis Casual", "Leve e confortável para uso diário", 189.90, 249.90, "Calçados", 25, "sem-imagem.jpg", 1),
+            ("Boné Ajustável", "Aba curva, regulagem traseira", 39.90, None, "Acessórios", 40, "sem-imagem.jpg", 0),
+            ("Mochila Urbana", "15 litros, impermeável, porta notebook", 159.90, 219.90, "Acessórios", 20, "sem-imagem.jpg", 1),
+            ("Meias Kit 6 pares", "Algodão premium, cano médio", 49.90, None, "Roupas", 100, "sem-imagem.jpg", 0),
         ]
         cursor.executemany("""
             INSERT INTO produtos (nome, descricao, preco, preco_original, categoria, estoque, imagem, destaque)
@@ -119,7 +118,8 @@ def criar_pedido(nome, email, telefone, endereco, itens, total):
             INSERT INTO itens_pedido (pedido_id, produto_id, nome, preco, quantidade)
             VALUES (?, ?, ?, ?, ?)
         """, (pedido_id, item["id"], item["nome"], item["preco"], item["quantidade"]))
-        cursor.execute("UPDATE produtos SET estoque = estoque - ? WHERE id = ?", (item["quantidade"], item["id"]))
+        cursor.execute("UPDATE produtos SET estoque = estoque - ? WHERE id = ?",
+                      (item["quantidade"], item["id"]))
     conn.commit()
     conn.close()
     return pedido_id
@@ -155,13 +155,15 @@ def listar_produtos_admin():
     conn.close()
     return resultado
 
-def adicionar_produto(nome, descricao, preco, preco_original, categoria, estoque, destaque):
+def adicionar_produto(nome, descricao, preco, preco_original, categoria, estoque, destaque, imagem="sem-imagem.jpg"):
     conn = sqlite3.connect(DB)
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO produtos (nome, descricao, preco, preco_original, categoria, estoque, destaque)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (nome, descricao, float(preco), float(preco_original) if preco_original else None, categoria, int(estoque), int(destaque)))
+        INSERT INTO produtos (nome, descricao, preco, preco_original, categoria, estoque, destaque, imagem)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (nome, descricao, float(preco),
+          float(preco_original) if preco_original else None,
+          categoria, int(estoque), int(destaque), imagem))
     conn.commit()
     conn.close()
 

@@ -100,18 +100,19 @@
             <h2>
                 <span>Produtos</span>
             </h2>
-            <form method="POST" action="/admin/produto/adicionar" style="margin-bottom:20px">
+            <form method="POST" action="/admin/produto/adicionar" enctype="multipart/form-data" style="margin-bottom:20px">
                 <div class="form-add">
                     <input type="text" name="nome" placeholder="Nome do produto" required>
                     <input type="text" name="descricao" placeholder="Descrição">
                     <input type="number" name="preco" placeholder="Preço" step="0.01" required>
-                    <input type="number" name="preco_original" placeholder="Preço original (opcional)" step="0.01">
+                    <input type="number" name="preco_original" placeholder="Preço original" step="0.01">
                     <input type="text" name="categoria" placeholder="Categoria" required>
                     <input type="number" name="estoque" placeholder="Estoque" required>
                     <select name="destaque">
                         <option value="0">Sem destaque</option>
                         <option value="1">Destaque</option>
                     </select>
+                    <input type="file" name="imagem" accept="image/*" style="padding:6px">
                     <button type="submit" class="btn-add">+ Adicionar produto</button>
                 </div>
             </form>
