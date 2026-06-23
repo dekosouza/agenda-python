@@ -47,6 +47,15 @@ def inicializar():
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fotos_produto (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            produto_id INTEGER NOT NULL,
+            imagem TEXT NOT NULL,
+            FOREIGN KEY (produto_id) REFERENCES produtos(id)
+        )
+    """)
+
     cursor.execute("SELECT COUNT(*) FROM produtos")
     if cursor.fetchone()[0] == 0:
         produtos_iniciais = [
@@ -173,3 +182,18 @@ def alternar_ativo(id):
     cursor.execute("UPDATE produtos SET ativo = CASE WHEN ativo = 1 THEN 0 ELSE 1 END WHERE id = ?", (id,))
     conn.commit()
     conn.close()
+
+def adicionar_foto_produto(produto_id, imagem):
+    conn = sqlite3.connect(DB)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO fotos_produto (produto_id, imagem) VALUES (?, ?)", (produto_id, imagem))
+    conn.commit()
+    conn.close()
+
+def fotos_produto(produto_id):
+    conn = sqlite3.connect(DB)
+    cursor = conn.cursor()
+    cursor.execute("SELECT imagem FROM fotos_produto WHERE produto_id = ?", (produto_id,))
+    resultado = [r[0] for r in cursor.fetchall()]
+    conn.close()
+    return resultado

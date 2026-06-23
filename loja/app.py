@@ -6,10 +6,10 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 from database import (inicializar, listar_produtos, produto_por_id, produtos_destaque,
                       categorias, criar_pedido, listar_pedidos, itens_do_pedido,
-                      atualizar_status_pedido, listar_produtos_admin, adicionar_produto, alternar_ativo)
+                      atualizar_status_pedido, listar_produtos_admin, adicionar_produto,
+                      alternar_ativo, adicionar_foto_produto, fotos_produto)
 
 load_dotenv()
-app = Flask(__name__)
 app = Flask(__name__, static_folder="static")
 app.secret_key = "loja2024secretkey"
 
@@ -37,7 +37,7 @@ def salvar_imagem(arquivo):
     caminho = os.path.join(app.config["UPLOAD_FOLDER"], nome)
     img = Image.open(arquivo)
     img = img.convert("RGB")
-    img.thumbnail((600, 600))
+    img.thumbnail((800, 800))
     img.save(caminho, quality=85, optimize=True)
     return nome
 
@@ -65,7 +65,8 @@ def produto(id):
     p = produto_por_id(id)
     if not p:
         return redirect("/produtos")
-    return render_template("produto.html", loja=LOJA, produto=p)
+    fotos = fotos_produto(id)
+    return render_template("produto.html", loja=LOJA, produto=p, fotos=fotos)
 
 @app.route("/carrinho")
 def carrinho():
@@ -125,13 +126,11 @@ def mudar_status(id, status):
 def add_produto():
     if not session.get("logado"):
         return redirect("/admin/login")
-
     imagem = "sem-imagem.jpg"
     if "imagem" in request.files:
         arquivo = request.files["imagem"]
         if arquivo and arquivo.filename and allowed_file(arquivo.filename):
             imagem = salvar_imagem(arquivo)
-
     adicionar_produto(
         request.form.get("nome"),
         request.form.get("descricao"),
@@ -149,6 +148,17 @@ def toggle_produto(id):
     if not session.get("logado"):
         return redirect("/admin/login")
     alternar_ativo(id)
+    return redirect("/admin")
+
+@app.route("/admin/produto/<int:id>/foto", methods=["POST"])
+def add_foto_produto(id):
+    if not session.get("logado"):
+        return redirect("/admin/login")
+    if "imagem" in request.files:
+        arquivo = request.files["imagem"]
+        if arquivo and arquivo.filename and allowed_file(arquivo.filename):
+            nome = salvar_imagem(arquivo)
+            adicionar_foto_produto(id, nome)
     return redirect("/admin")
 
 if __name__ == "__main__":
